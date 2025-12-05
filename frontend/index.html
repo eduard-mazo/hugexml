@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bay Viewer - DuckDB</title>
+    <script src="https://unpkg.com/htmx.org@1.9.11"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="bg-gray-900 text-gray-200">
+    <div class="container mx-auto p-10">
+      <h1 class="text-4xl font-bold mb-6 text-blue-400">
+        Bay Viewer
+      </h1>
+
+      <div class="mb-6">
+        <input
+          id="bayname"
+          name="bayname"
+          placeholder="Buscar Bay (ej: R3394)"
+          class="p-3 rounded bg-gray-800 border border-gray-700 w-80"
+          hx-get="/bay"
+          hx-target="#result"
+          hx-trigger="keyup changed delay:300ms"
+          hx-include="#bayname"
+        />
+      </div>
+
+      <div
+        id="result"
+        class="p-4 bg-gray-800 border border-gray-700 rounded"
+      >
+        <p>Busca un Bay para ver sus datos.</p>
+      </div>
+    </div>
+  </body>
+</html>
