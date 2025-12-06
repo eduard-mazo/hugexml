@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-ndjson_to_parquet_duckdb.py
+ndjson_to_parquet.py
 Convierte NDJSON → Parquet usando DuckDB, excelente para JSON heterogéneo.
 
 Uso:
-    python ndjson_to_parquet_duckdb.py --in bays.jsonl --out bays.parquet
+    python ndjson_to_parquet.py --in bays.jsonl --out bays.parquet
 """
 
 import argparse

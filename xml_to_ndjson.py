@@ -4,6 +4,9 @@
 """
 xml_to_ndjson.py
 Convierte un XML gigantesco a NDJSON con barra de progreso real.
+
+Uso:
+    python xml_to_ndjson.py --xml IMM_EPM.xml --out bays.jsonl
 """
 
 import argparse
@@ -14,41 +17,36 @@ from lxml import etree
 from tqdm import tqdm
 
 
-def extract_children(elem):
-    out = OrderedDict()
+def xml_to_obj(elem):
+    obj = {}
 
+    # 1. Agregar atributos
+    if elem.attrib:
+        obj.update(dict(elem.attrib))
+
+    # 2. Texto interno
+    text = (elem.text or "").strip()
+    if text:
+        obj["_text"] = text
+
+    # 3. Hijos
+    children = {}
     for child in elem:
         tag = etree.QName(child.tag).localname
-        node = dict(child.attrib)
+        child_obj = xml_to_obj(child)
 
-        grandchildren = {}
-        for gc in child:
-            gtag = etree.QName(gc.tag).localname
-            entry = dict(gc.attrib)
-            text = (gc.text or "").strip()
-            if text:
-                entry["_text"] = text
-
-            if gtag in grandchildren:
-                if isinstance(grandchildren[gtag], list):
-                    grandchildren[gtag].append(entry)
-                else:
-                    grandchildren[gtag] = [grandchildren[gtag], entry]
-            else:
-                grandchildren[gtag] = entry
-
-        if grandchildren:
-            node["_children"] = grandchildren
-
-        if tag in out:
-            if isinstance(out[tag], list):
-                out[tag].append(node)
-            else:
-                out[tag] = [out[tag], node]
+        if tag in children:
+            # Convertir en lista (si aún no lo es)
+            if not isinstance(children[tag], list):
+                children[tag] = [children[tag]]
+            children[tag].append(child_obj)
         else:
-            out[tag] = node
+            children[tag] = child_obj
 
-    return out
+    if children:
+        obj["_children"] = children
+
+    return obj
 
 
 def xml_to_ndjson(xml_path, out_path, regex=r"^R\d{1,4}$"):
@@ -86,11 +84,11 @@ def xml_to_ndjson(xml_path, out_path, regex=r"^R\d{1,4}$"):
 
         name = elem.get("Name", "")
         if name and pattern.fullmatch(name):
-            children = extract_children(elem)
+            children = xml_to_obj(elem)
             obj = {
                 "BayName": name,
                 "Attributes": dict(elem.attrib),
-                "Children": children
+                "Children": children.get("_children", {})
             }
             out.write(json.dumps(obj, ensure_ascii=False) + "\n")
             count += 1

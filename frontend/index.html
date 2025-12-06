@@ -2,7 +2,8 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Bay Viewer - DuckDB</title>
+    <title>Bay Analyzer</title>
+
     <script src="https://unpkg.com/htmx.org@1.9.11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
@@ -10,28 +11,69 @@
   <body class="bg-gray-900 text-gray-200">
     <div class="container mx-auto p-10">
       <h1 class="text-4xl font-bold mb-6 text-blue-400">
-        Bay Viewer
+        Bay Analyzer
       </h1>
 
-      <div class="mb-6">
-        <input
-          id="bayname"
-          name="bayname"
-          placeholder="Buscar Bay (ej: R3394)"
-          class="p-3 rounded bg-gray-800 border border-gray-700 w-80"
-          hx-get="/bay"
-          hx-target="#result"
-          hx-trigger="keyup changed delay:300ms"
-          hx-include="#bayname"
-        />
+      <!-- Buscar Bay -->
+      <h2 class="text-xl text-green-400 mb-2">Buscar Bay</h2>
+
+      <input
+        id="bay_input"
+        name="bayname"
+        placeholder="Ejemplo: R3394"
+        class="p-3 rounded bg-gray-800 border border-gray-700 w-80"
+        hx-trigger="keyup changed delay:300ms"
+        hx-get="/bay"
+        hx-target="#bay_result"
+        hx-include="#bay_input"
+        hx-params="*"
+      />
+
+      <script>
+        document.body.addEventListener(
+          "htmx:beforeRequest",
+          function (evt) {
+            let el = evt.target;
+            if (el.id === "bay_input") {
+              if (el.value.trim().length === 0) {
+                evt.preventDefault();
+                document.getElementById("bay_result").innerHTML =
+                  "<p class='text-gray-400'>Escribe un nombre de Bay...</p>";
+              }
+            }
+          }
+        );
+      </script>
+
+      <div id="bay_result" class="mt-4 p-4 bg-gray-800 rounded">
+        <p class="text-gray-400">Escribe un nombre de Bay...</p>
       </div>
 
-      <div
-        id="result"
-        class="p-4 bg-gray-800 border border-gray-700 rounded"
+      <hr class="my-10 border-gray-700" />
+
+      <!-- Query personalizada -->
+      <h2 class="text-xl text-green-400 mb-2">Query personalizada</h2>
+
+      <textarea
+        id="query_input"
+        class="w-full h-40 p-4 bg-gray-800 border border-gray-700 rounded"
+        placeholder="Ejemplo: SELECT BayName, Children->AnalogLimit FROM bays LIMIT 20;"
       >
-        <p>Busca un Bay para ver sus datos.</p>
-      </div>
+      </textarea>
+
+      <button
+        class="mt-4 px-4 py-2 bg-blue-600 rounded hover:bg-blue-500"
+        hx-post="/query"
+        hx-target="#query_result"
+        hx-include="#query_input"
+      >
+        Ejecutar Query
+      </button>
+
+      <div
+        id="query_result"
+        class="mt-4 p-4 bg-gray-800 rounded"
+      ></div>
     </div>
   </body>
 </html>
